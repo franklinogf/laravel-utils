@@ -1,0 +1,48 @@
+{
+    "name": "franklinogf/laravel-utils",
+    "description": "A set of utilities for laravel projects",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.0.1",
+    "authors": [
+        {
+            "name": "Franklin Gonzalez",
+            "email": "franklinomarflores@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3.0",
+        "laravel/framework": "^11.0|^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Franklinogf\\LaravelUtils\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Franklinogf\\LaravelUtils\\LaravelUtilsServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.6",
+        "pestphp/pest": "^4.1"
+    }
+}
