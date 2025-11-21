@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -28,6 +30,14 @@ return [
     ],
 
     'lang_keys' => [
+        /*|--------------------------------------------------------------------------
+        | Main Locale
+        |--------------------------------------------------------------------------
+        | This option defines the main locale used for extracting
+        | translation keys from Laravel language files. You can change this
+        | to match the primary language of your application.
+        |*/
+        'main_locale' => 'en',
         /*
         |--------------------------------------------------------------------------
         | Output Path for TypeScript Language Keys
@@ -49,6 +59,20 @@ return [
         | You can change this to suit your naming conventions.
         |*/
         'type_name' => 'TranslationKeys',
+
+        /*|--------------------------------------------------------------------------
+        | Excluded Language Files
+        |--------------------------------------------------------------------------
+        | This option allows you to specify language files that should be
+        | excluded from the TypeScript translation keys generation process.
+        | Provide an array of file names (without extensions) to exclude them.
+        |*/
+        'exclude_files' => [
+            'auth',
+            'pagination',
+            'passwords',
+            'validation',
+        ],
     ],
 
 ];

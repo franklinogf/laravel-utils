@@ -1,10 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Franklinogf\LaravelUtils\Providers;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
-class LaravelUtilsServiceProvider extends ServiceProvider
+final class LaravelUtilsServiceProvider extends ServiceProvider
 {
     /**
      * The commands to be registered.
@@ -15,6 +18,7 @@ class LaravelUtilsServiceProvider extends ServiceProvider
         \Franklinogf\LaravelUtils\Commands\SyncEnumsCommand::class,
         \Franklinogf\LaravelUtils\Commands\ExportLangKeysCommand::class,
     ];
+
     /**
      * Bootstrap services.
      */
@@ -26,6 +30,6 @@ class LaravelUtilsServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../../config/utils.php' => config_path('utils.php'),
             ], 'config');
-    }
+        }
     }
 }

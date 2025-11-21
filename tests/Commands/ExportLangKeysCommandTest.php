@@ -13,14 +13,20 @@ function cleanup(): void
         File::deleteDirectory($langPath);
     }
 
+    $langJsonPath = lang_path('en.json');
+    if (File::exists($langJsonPath)) {
+        File::delete($langJsonPath);
+    }
+
     $jsPath = resource_path('js/types');
     if (File::isDirectory($jsPath)) {
         File::deleteDirectory($jsPath);
     }
-}
-beforeEach(fn() => cleanup());
 
-afterEach(fn() => cleanup());
+}
+beforeEach(fn () => cleanup());
+
+afterEach(fn () => cleanup());
 
 it('generates TypeScript definitions from JSON language file', function (): void {
     // Arrange
@@ -40,10 +46,27 @@ it('generates TypeScript definitions from JSON language file', function (): void
     expect(File::exists($outputPath))->toBeTrue();
 
     $content = File::get($outputPath);
-    expect($content)->toContain("export type TranslationKeys =")
+    expect($content)->toContain('export type TranslationKeys =')
         ->toContain("| 'Welcome'")
         ->toContain("| 'Login'")
         ->toContain("| 'Goodbye'");
+});
+
+it('does not generate from json file if it does not exist', function (): void {
+    // Arrange - no JSON file created
+
+    /** @var TestCase $this */
+    $this->artisan(ExportLangKeysCommand::class)
+        ->assertSuccessful();
+
+    // Assert - command should still succeed with 0 translations
+    $outputPath = resource_path('js/types/lang-keys.d.ts');
+    expect(File::exists($outputPath))->toBeTrue();
+
+    $content = File::get($outputPath);
+
+    expect($content)->toContain('export type TranslationKeys =')
+        ->not->toContain("| '");
 });
 
 it('generates TypeScript definitions from PHP language files', function (): void {
@@ -155,7 +178,7 @@ it('merges JSON and PHP translations', function (): void {
     File::makeDirectory(lang_path('en'), 0755, true, true);
     File::put(lang_path('en/messages.php'), "<?php\nreturn ['php_key' => 'PHP value'];");
 
-   /** @var TestCase $this */
+    /** @var TestCase $this */
     $this->artisan(ExportLangKeysCommand::class)
         ->assertSuccessful();
 

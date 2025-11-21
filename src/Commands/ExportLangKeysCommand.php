@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Franklinogf\LaravelUtils\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Helper\ProgressBar;
+
+use function count;
+use function in_array;
+use function is_array;
 
 final class ExportLangKeysCommand extends Command
 {
@@ -68,7 +73,7 @@ final class ExportLangKeysCommand extends Command
         $phpKeys = $this->getPhpFilesKeys();
 
         $jsonKeys = $this->getJsonFilesKeys();
-
+        /** @var array<string, string> $keys */
         $keys = array_merge($jsonKeys, $phpKeys);
         ksort($keys);
         $this->progressBar->setMessage('Finished processing files...');
@@ -84,9 +89,9 @@ final class ExportLangKeysCommand extends Command
      */
     private function getJsonFilesKeys(): array
     {
-
-        $jsonPath = lang_path('en.json');
-        if (! file_exists($jsonPath)) {
+        $mainLocale = config()->string('utils.lang_keys.main_locale', 'en');
+        $jsonPath = lang_path("$mainLocale.json");
+        if (! File::exists($jsonPath)) {
             $this->info('JSON language file not found.');
 
             return [];
@@ -95,14 +100,10 @@ final class ExportLangKeysCommand extends Command
         $this->progressBar->setMessage('Processing JSON files...');
         $keys = [];
 
-        $jsonFile = file_get_contents($jsonPath);
-        if ($jsonFile === false) {
-            $this->error('Failed to read JSON language file.');
+        $jsonFile = File::get($jsonPath);
 
-            return [];
-        }
         /**
-         * @var array<string, string> $json
+         * @var string[] $json
          */
         $json = json_decode($jsonFile, true);
         $count = count(array_keys($json));
@@ -112,44 +113,41 @@ final class ExportLangKeysCommand extends Command
             $this->progressBar->advance();
         }
 
+        /** @var array<string, string> $keys */
         return $keys;
     }
 
     /**
      * Get the translation keys from the PHP language files.
      *
-     * @return array<int,string>
+     * @return array<string,string>
      */
     private function getPhpFilesKeys(): array
     {
         $this->progressBar->setMessage('Processing PHP files...');
         $keys = [];
         $separator = DIRECTORY_SEPARATOR;
-        $excludedFiles = [
+        $excludedFiles = config()->array('utils.lang_keys.excluded_files', [
             'auth',
-            'flash',
             'pagination',
             'passwords',
-            'permission',
             'validation',
-        ];
-        $langPath = lang_path('en');
+        ]);
 
-        $files = glob("{$langPath}{$separator}*.php");
-        if ($files === false) {
-            return [];
-        }
+        $langPath = lang_path(config()->string('utils.lang_keys.main_locale', 'en'));
+
+        $files = File::glob("{$langPath}{$separator}*.php");
         /**
          * @var string[] $phpFiles
          */
         $phpFiles = collect($files)
-            ->filter(fn (string $file): bool => ! \in_array(basename($file, '.php'), $excludedFiles))
+            ->filter(fn (mixed $file): bool => is_string($file) && ! in_array(basename($file, '.php'), $excludedFiles))
             ->toArray();
 
         foreach ($phpFiles as $file) {
             $filename = basename($file, '.php');
             /**
-             * @var array<mixed, mixed> $translations
+             * @var array<string, array<string, string>|string> $translations
              */
             $translations = include $file;
             $count = count(array_keys($translations));
@@ -163,16 +161,18 @@ final class ExportLangKeysCommand extends Command
     /**
      * Recursively flatten the language array.
      *
-     * @param  array<mixed, mixed>  $array
+     * @param  array<string, array<string, string>|string>  $array
      * @param  array<string, string>  $keys
      */
     private function flattenLang(array $array, string $prefix, array &$keys, string $parent = ''): void
     {
+        /** @var array<string, string>|string $value */
         foreach ($array as $key => $value) {
 
             $fullKey = $parent !== '' && $parent !== '0' ? "$parent.$key" : "$prefix.$key";
 
             if (is_array($value)) {
+                /** @var array<string, string> $value */
                 $this->flattenLang($value, $prefix, $keys, $fullKey);
             } else {
                 $keys[$fullKey] = (string) $value;
@@ -202,7 +202,7 @@ final class ExportLangKeysCommand extends Command
 
         foreach ($translations as $key => $value) {
             $params = $this->extractTranslationParams($value);
-            if (! empty($params)) {
+            if ($params !== []) {
                 $output .= "  '{$key}': { ";
                 $output .= collect($params)
                     ->map(fn (string $param): string => "{$param}: string | number")
@@ -213,21 +213,20 @@ final class ExportLangKeysCommand extends Command
 
         $output .= "};\n\n";
         $output .= "export type TranslationWithParams = keyof TranslationParams;\n";
-        $output .= "export type TranslationWithoutParams = Exclude<{$typeName}, TranslationWithParams>;\n";
 
-        return $output;
+        return $output."export type TranslationWithoutParams = Exclude<{$typeName}, TranslationWithParams>;\n";
     }
 
     /**
      * Extract parameter names from a translation string.
      *
-     * @return list<string>
+     * @return array<int, string>
      */
     private function extractTranslationParams(string $translation): array
     {
         // Match Laravel translation placeholders like :name, :count, etc.
         preg_match_all('/:(\w+)/', $translation, $matches);
 
-        return array_unique($matches[1] ?? []);
+        return array_unique($matches[1]);
     }
 }

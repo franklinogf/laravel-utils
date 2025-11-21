@@ -14,6 +14,22 @@
         "php": "^8.3.0",
         "laravel/framework": "^11.0|^12.0"
     },
+    "scripts": {
+        "refactor": "rector",
+        "lint": "pint",
+        "test:refactor": "rector --dry-run",
+        "test:lint": "pint --test",
+        "test:types": "phpstan analyse --ansi",
+        "test:unit": "pest --colors=always --coverage --min=100",
+        "test:type-coverage": "pest --colors=always --parallel --type-coverage",
+        "test": [
+            "@test:refactor",
+            "@test:lint",
+            "@test:types",
+            "@test:unit",
+            "@test:type-coverage"
+        ]
+    },
     "autoload": {
         "psr-4": {
             "Franklinogf\\LaravelUtils\\": "src/"
@@ -42,7 +58,11 @@
         }
     },
     "require-dev": {
+        "laravel/pint": "^1.25",
         "orchestra/testbench": "^10.6",
-        "pestphp/pest": "^4.1"
+        "pestphp/pest": "^4.1",
+        "pestphp/pest-plugin-type-coverage": "^4.0",
+        "phpstan/phpstan": "^2.1.32",
+        "rector/rector": "^2.2"
     }
 }

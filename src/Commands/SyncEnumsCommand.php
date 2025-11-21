@@ -6,6 +6,7 @@ namespace Franklinogf\LaravelUtils\Commands;
 
 use BackedEnum;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 final class SyncEnumsCommand extends Command
@@ -18,6 +19,9 @@ final class SyncEnumsCommand extends Command
     {
         $outputPath = resource_path(config()->string('utils.enums.output_path', 'js/enums'));
         $fileName = $this->argument('fileName');
+        if (! is_string($fileName) || $fileName === '') {
+            $fileName = null;
+        }
 
         $fileName = $fileName !== null ? Str::of($fileName)->trim()->whenEmpty(fn (): null => null) : null;
 
@@ -42,8 +46,8 @@ final class SyncEnumsCommand extends Command
 
         $this->info('Found '.count($enums).' enum(s) to sync.');
 
-        if (! is_dir($outputPath)) {
-            mkdir($outputPath, 0755, true);
+        if (! File::isDirectory($outputPath)) {
+            File::makeDirectory($outputPath, 0755, true);
         }
 
         foreach ($enums as $name => $enum) {

@@ -52,6 +52,7 @@ PHP);
 
 it('syncs multiple enums at once', function (): void {
     // Arrange
+    File::makeDirectory(app_path('enums'), 0755, true, true);
     File::put(app_path('enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
@@ -121,7 +122,9 @@ PHP);
 
 it('creates output directory if it does not exist', function (): void {
     // Arrange
-    File::deleteDirectory(resource_path('js'));
+    if (File::isDirectory(resource_path('js/enums'))) {
+        File::deleteDirectory(resource_path('js/enums'));
+    }
     File::put(app_path('enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
