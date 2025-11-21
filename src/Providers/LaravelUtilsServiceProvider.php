@@ -29,7 +29,7 @@ final class LaravelUtilsServiceProvider extends ServiceProvider
 
             $this->publishes([
                 __DIR__.'/../../config/utils.php' => config_path('utils.php'),
-            ], 'config');
+            ], 'utils-config');
         }
     }
 }

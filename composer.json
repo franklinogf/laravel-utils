@@ -3,7 +3,7 @@
     "description": "A set of utilities for laravel projects",
     "type": "library",
     "license": "MIT",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "authors": [
         {
             "name": "Franklin Gonzalez",
