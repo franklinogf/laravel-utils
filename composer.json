@@ -53,7 +53,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Franklinogf\\LaravelUtils\\LaravelUtilsServiceProvider"
+                "Franklinogf\\LaravelUtils\\Providers\\LaravelUtilsServiceProvider"
             ]
         }
     },
