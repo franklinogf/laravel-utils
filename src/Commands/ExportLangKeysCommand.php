@@ -198,19 +198,28 @@ final class ExportLangKeysCommand extends Command
         $output .= ";\n\n";
 
         // Generate TranslationParams for translations with variables
-        $output .= "export type TranslationParams = {\n";
+        $hasParams = false;
+        $paramsOutput = '';
 
         foreach ($translations as $key => $value) {
             $params = $this->extractTranslationParams($value);
             if ($params !== []) {
-                $output .= "  '{$key}': { ";
-                $output .= collect($params)
+                $hasParams = true;
+                $paramsOutput .= "  '{$key}': { ";
+                $paramsOutput .= collect($params)
                     ->map(fn (string $param): string => "{$param}: string | number")
                     ->implode('; ');
-                $output .= " };\n";
+                $paramsOutput .= " };\n";
             }
         }
 
+        if (! $hasParams) {
+            $output .= "// Currently, there are no translation keys that require parameters.\n";
+            $output .= "// eslint-disable-next-line @typescript-eslint/no-empty-object-type\n";
+        }
+
+        $output .= "export type TranslationParams = {\n";
+        $output .= $paramsOutput;
         $output .= "};\n\n";
         $output .= "export type TranslationWithParams = keyof TranslationParams;\n";
 
