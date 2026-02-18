@@ -8,19 +8,19 @@ use Tests\TestCase;
 
 beforeEach(function (): void {
     // Create necessary directories
-    File::makeDirectory(app_path('enums'), 0755, true, true);
+    File::makeDirectory(app_path('Enums'), 0755, true, true);
     File::makeDirectory(resource_path('js/enums'), 0755, true, true);
 });
 
 afterEach(function (): void {
     // Clean up
-    File::deleteDirectory(app_path('enums'));
-    File::deleteDirectory(resource_path('js'));
+    File::deleteDirectory(app_path());
+    File::deleteDirectory(resource_path());
 });
 
 it('generates TypeScript enums from PHP BackedEnums', function (): void {
     // Arrange
-    File::put(app_path('enums/Status.php'), <<<'PHP'
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -52,8 +52,8 @@ PHP);
 
 it('syncs multiple enums at once', function (): void {
     // Arrange
-    File::makeDirectory(app_path('enums'), 0755, true, true);
-    File::put(app_path('enums/Status.php'), <<<'PHP'
+    File::makeDirectory(app_path('Enums'), 0755, true, true);
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -63,7 +63,7 @@ enum Status: string
 }
 PHP);
 
-    File::put(app_path('enums/Role.php'), <<<'PHP'
+    File::put(app_path('Enums/Role.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -90,7 +90,7 @@ PHP);
 
 it('syncs single enum when fileName argument is provided', function (): void {
     // Arrange
-    File::put(app_path('enums/Status.php'), <<<'PHP'
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -100,7 +100,7 @@ enum Status: string
 }
 PHP);
 
-    File::put(app_path('enums/Role.php'), <<<'PHP'
+    File::put(app_path('Enums/Role.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -120,12 +120,37 @@ PHP);
     expect(File::exists(resource_path('js/enums/Role.ts')))->toBeFalse();
 });
 
+it('sync enums in a deeply nested directory structure', function (): void {
+    // Arrange
+    File::makeDirectory(app_path('Enums/Nested'), 0755, true, true);
+    File::put(app_path('Enums/Nested/Status.php'), <<<'PHP'
+<?php
+namespace App\Enums\Nested;
+
+enum Status: string
+{
+    case Active = 'active';
+}
+PHP);
+
+    /** @var TestCase $this */
+    $this->artisan(SyncEnumsCommand::class)
+        ->assertSuccessful()
+        ->expectsOutput('Found 1 enum(s) to sync.');
+
+    // Assert
+    expect(File::exists(resource_path('js/enums/nested/Status.ts')))->toBeTrue();
+
+    $content = File::get(resource_path('js/enums/nested/Status.ts'));
+    expect($content)->toContain('// Auto-generated from App\Enums\Nested\Status');
+});
+
 it('creates output directory if it does not exist', function (): void {
     // Arrange
     if (File::isDirectory(resource_path('js/enums'))) {
         File::deleteDirectory(resource_path('js/enums'));
     }
-    File::put(app_path('enums/Status.php'), <<<'PHP'
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -146,9 +171,9 @@ PHP);
 
 it('uses custom output path from config', function (): void {
     // Arrange
-    config()->set('utils.enums.output_path', 'custom/enums');
+    config()->set('utils.enums.output_path', resource_path('custom/enums'));
     File::makeDirectory(resource_path('custom/enums'), 0755, true, true);
-    File::put(app_path('enums/Status.php'), <<<'PHP'
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -168,7 +193,7 @@ PHP);
 
 it('handles enums with integer values', function (): void {
     // Arrange
-    File::put(app_path('enums/Priority.php'), <<<'PHP'
+    File::put(app_path('Enums/Priority.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -193,7 +218,7 @@ PHP);
 
 it('handles empty enums directory gracefully', function (): void {
     // Arrange
-    File::deleteDirectory(app_path('enums'));
+    File::deleteDirectory(app_path('Enums'));
 
     /** @var TestCase $this */
     $this->artisan(SyncEnumsCommand::class)
@@ -203,7 +228,7 @@ it('handles empty enums directory gracefully', function (): void {
 
 it('ignores non-PHP files in enums directory', function (): void {
     // Arrange
-    File::put(app_path('enums/Status.php'), <<<'PHP'
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 
@@ -212,8 +237,8 @@ enum Status: string
     case Active = 'active';
 }
 PHP);
-    File::put(app_path('enums/readme.txt'), 'This is a readme');
-    File::put(app_path('enums/.gitkeep'), '');
+    File::put(app_path('Enums/readme.txt'), 'This is a readme');
+    File::put(app_path('Enums/.gitkeep'), '');
 
     /** @var TestCase $this */
     $this->artisan(SyncEnumsCommand::class)
@@ -227,7 +252,7 @@ PHP);
 
 it('overwrites existing TypeScript enum files', function (): void {
     // Arrange
-    File::put(app_path('enums/Status.php'), <<<'PHP'
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
 <?php
 namespace App\Enums;
 

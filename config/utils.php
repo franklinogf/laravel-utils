@@ -16,6 +16,14 @@ return [
     */
 
     'enums' => [
+        /*|--------------------------------------------------------------------------
+        | Input Path for PHP Enums
+        |--------------------------------------------------------------------------
+        | This option defines the input path where your PHP enum classes are located.
+        | The package will scan this directory for PHP files and attempt to generate TypeScript enums based on the classes it finds. You can customize this path to fit your project's structure.
+        |*/
+
+        'input_path' => app_path('Enums'),
         /*
         |--------------------------------------------------------------------------
         | Output Path for TypeScript Enums
@@ -26,7 +34,7 @@ return [
         | project's structure.
         |
         */
-        'output_path' => 'js/enums',
+        'output_path' => resource_path('js/enums'),
     ],
 
     'lang_keys' => [
@@ -48,7 +56,7 @@ return [
         | project's structure.
         |
         */
-        'output_path' => 'js/types/lang-keys.d.ts',
+        'output_path' => resource_path('js/types/lang-keys.d.ts'),
 
         /*|--------------------------------------------------------------------------
         | Type Name for Translation Keys

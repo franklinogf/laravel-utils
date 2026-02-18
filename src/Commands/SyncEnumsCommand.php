@@ -8,6 +8,7 @@ use BackedEnum;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use SplFileInfo;
 
 final class SyncEnumsCommand extends Command
 {
@@ -17,58 +18,96 @@ final class SyncEnumsCommand extends Command
 
     public function handle(): int
     {
-        $outputPath = resource_path(config()->string('utils.enums.output_path', 'js/enums'));
         $fileName = $this->argument('fileName');
         if (! is_string($fileName) || $fileName === '') {
             $fileName = null;
         }
+        $outputPath = config()->string('utils.enums.output_path', resource_path('js/enums'));
 
         $fileName = $fileName !== null ? Str::of($fileName)->trim()->whenEmpty(fn (): null => null) : null;
 
-        $enumsPath = app_path('enums');
+        $enumsPath = config()->string('utils.enums.input_path', app_path('Enums'));
 
-        $enums = file_exists($enumsPath)
-                    ? collect(scandir($enumsPath))
-                        ->filter(fn (string $file): bool => $fileName !== null ? $file === $fileName->value() && str_ends_with($file, '.php') : str_ends_with($file, '.php'))
-                        ->mapWithKeys(function (string $file) use ($enumsPath): array {
-                            $className = pathinfo($file, PATHINFO_FILENAME);
-                            $fullPath = "{$enumsPath}/{$file}";
+        if (! File::isDirectory($enumsPath)) {
+            $this->info('Found 0 enum(s) to sync.');
 
-                            // Include the file to load the enum class
-                            require_once $fullPath;
+            return self::SUCCESS;
+        }
 
-                            return [
-                                $className => 'App\\Enums\\'.$className,
-                            ];
-                        })
-                        ->toArray()
-                    : [];
+        $enums = collect(File::allFiles($enumsPath))
+            ->filter(fn (SplFileInfo $file): bool => $fileName !== null ? $file->getFilename() === $fileName->value() && str($file->getFilename())->endsWith('.php') : str($file->getFilename())->endsWith('.php'))
+            ->map(function (SplFileInfo $file) use ($enumsPath): array {
+                $className = $file->getFilenameWithoutExtension();
+                $fullPath = $file->getRealPath();
+                $namespace = $this->getNamespaceFromFile($file);
 
+                // Get relative path to preserve directory structure
+                $relativePath = str_replace($enumsPath.DIRECTORY_SEPARATOR, '', $fullPath);
+                $relativePath = str_replace('.php', '', $relativePath);
+                $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
+
+                // Ensure forward slashes in relative path for consistent output
+                $relativePathForFile = str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+
+                // Include the file to load the enum class
+                require_once $fullPath;
+
+                return [
+                    'className' => $className,
+                    'namespace' => $namespace,
+                    'relativePath' => $relativePath,
+                    'relativePathForFile' => $relativePathForFile,
+                ];
+            })
+            ->toArray();
+        // dd($enums);
         $this->info('Found '.count($enums).' enum(s) to sync.');
 
         if (! File::isDirectory($outputPath)) {
             File::makeDirectory($outputPath, 0755, true);
         }
 
-        foreach ($enums as $name => $enum) {
-            /** @var class-string<BackedEnum> $enum */
-            $cases = collect($enum::cases())
+        foreach ($enums as $enumData) {
+            $className = $enumData['className'];
+            $namespace = $enumData['namespace'];
+            $relativePathForFile = $enumData['relativePathForFile'];
+
+            /** @var class-string<BackedEnum> $namespace */
+            $cases = collect($namespace::cases())
                 ->map(fn (BackedEnum $case): string => "  {$case->name} = '{$case->value}',")
                 ->implode("\n");
 
             $ts = <<<TS
-// Auto-generated from {$enum}. DO NOT EDIT MANUALLY.
-export enum {$name} {
+// Auto-generated from {$namespace}. DO NOT EDIT MANUALLY.
+export enum {$className} {
 {$cases}
 }
 
 TS;
 
-            file_put_contents("{$outputPath}/{$name}.ts", $ts);
+            $outputFile = "{$outputPath}".DIRECTORY_SEPARATOR."{$relativePathForFile}.ts";
+            $outputDir = dirname($outputFile);
+
+            if (! File::isDirectory($outputDir)) {
+                File::makeDirectory($outputDir, 0755, true);
+            }
+
+            file_put_contents($outputFile, $ts);
         }
 
         $this->info('✅ TypeScript enums synced!');
 
         return self::SUCCESS;
+    }
+
+    private function getNamespaceFromFile(SplFileInfo $file): string
+    {
+        $fullPath = $file->getRealPath();
+        $relative = str($fullPath)
+            ->after(app_path().DIRECTORY_SEPARATOR)
+            ->ucfirst()
+            ->replace(['/', '.php'], ['\\', ''])->value();
+
+        return "App\\{$relative}";
     }
 }
