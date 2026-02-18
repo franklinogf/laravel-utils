@@ -34,6 +34,9 @@ final class SyncEnumsCommand extends Command
             return self::SUCCESS;
         }
 
+        /**
+         * @var array<int, array{className:string,namespace:class-string<BackedEnum>,relativePathForFile:string}> $enums
+         */
         $enums = collect(File::allFiles($enumsPath))
             ->filter(fn (SplFileInfo $file): bool => $fileName !== null ? $file->getFilename() === $fileName->value() && str($file->getFilename())->endsWith('.php') : str($file->getFilename())->endsWith('.php'))
             ->map(function (SplFileInfo $file) use ($enumsPath): array {
@@ -55,7 +58,6 @@ final class SyncEnumsCommand extends Command
                 return [
                     'className' => $className,
                     'namespace' => $namespace,
-                    'relativePath' => $relativePath,
                     'relativePathForFile' => $relativePathForFile,
                 ];
             })
@@ -72,7 +74,6 @@ final class SyncEnumsCommand extends Command
             $namespace = $enumData['namespace'];
             $relativePathForFile = $enumData['relativePathForFile'];
 
-            /** @var class-string<BackedEnum> $namespace */
             $cases = collect($namespace::cases())
                 ->map(fn (BackedEnum $case): string => "  {$case->name} = '{$case->value}',")
                 ->implode("\n");
