@@ -8,6 +8,7 @@ use BackedEnum;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use ReflectionClass;
 use SplFileInfo;
 
 final class SyncEnumsCommand extends Command
@@ -60,6 +61,18 @@ final class SyncEnumsCommand extends Command
                     'namespace' => $namespace,
                     'relativePathForFile' => $relativePathForFile,
                 ];
+            })
+            ->filter(function (array $enumData): bool {
+                $namespace = $enumData['namespace'];
+
+                // Check if the namespace actually exists and is a BackedEnum
+                if (! class_exists($namespace)) {
+                    return false;
+                }
+
+                $reflection = new ReflectionClass($namespace);
+
+                return $reflection->isEnum() && $reflection->implementsInterface(BackedEnum::class);
             })
             ->toArray();
         // dd($enums);

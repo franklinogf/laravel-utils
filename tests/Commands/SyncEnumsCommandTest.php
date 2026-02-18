@@ -274,3 +274,74 @@ PHP);
     expect($content)->not->toContain('Old')
         ->toContain("Active = 'active',");
 });
+
+it('ignores traits in enums directory', function (): void {
+    // Arrange
+    File::put(app_path('Enums/EnumTrait.php'), <<<'PHP'
+<?php
+namespace App\Enums;
+
+trait EnumTrait
+{
+    public function getLabel(): string
+    {
+        return match($this) {
+            default => '',
+        };
+    }
+}
+PHP);
+
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
+<?php
+namespace App\Enums;
+
+enum Status: string
+{
+    case Active = 'active';
+}
+PHP);
+
+    /** @var TestCase $this */
+    $this->artisan(SyncEnumsCommand::class)
+        ->assertSuccessful()
+        ->expectsOutput('Found 1 enum(s) to sync.');
+
+    // Assert
+    expect(File::exists(resource_path('js/enums/Status.ts')))->toBeTrue();
+    expect(File::exists(resource_path('js/enums/EnumTrait.ts')))->toBeFalse();
+});
+
+it('ignores classes in enums directory', function (): void {
+    // Arrange
+    File::put(app_path('Enums/Helper.php'), <<<'PHP'
+<?php
+namespace App\Enums;
+
+class Helper
+{
+    public static function process(): void
+    {
+    }
+}
+PHP);
+
+    File::put(app_path('Enums/Status.php'), <<<'PHP'
+<?php
+namespace App\Enums;
+
+enum Status: string
+{
+    case Active = 'active';
+}
+PHP);
+
+    /** @var TestCase $this */
+    $this->artisan(SyncEnumsCommand::class)
+        ->assertSuccessful()
+        ->expectsOutput('Found 1 enum(s) to sync.');
+
+    // Assert
+    expect(File::exists(resource_path('js/enums/Status.ts')))->toBeTrue();
+    expect(File::exists(resource_path('js/enums/Helper.ts')))->toBeFalse();
+});
