@@ -9,7 +9,7 @@ use Tests\TestCase;
 function cleanup(): void
 {
     $langPath = lang_path('en');
-    if (File::isDirectory($langPath)) {
+    if (File::exists($langPath)) {
         File::deleteDirectory($langPath);
     }
 
@@ -18,8 +18,8 @@ function cleanup(): void
         File::delete($langJsonPath);
     }
 
-    $jsPath = resource_path('js/types');
-    if (File::isDirectory($jsPath)) {
+    $jsPath = resource_path('js');
+    if (File::exists($jsPath)) {
         File::deleteDirectory($jsPath);
     }
 
@@ -133,9 +133,8 @@ it('extracts translation parameters correctly', function (): void {
 
 it('uses custom output path from config', function (): void {
     // Arrange
-    config()->set('utils.lang_keys.output_path', 'custom/path/translations.d.ts');
+    config()->set('utils.lang_keys.output_path', resource_path('custom/path/translations.d.ts'));
     File::put(lang_path('en.json'), json_encode(['test' => 'Test']));
-    File::makeDirectory(resource_path('custom/path'), 0755, true, true);
 
     /** @var TestCase $this */
     $this->artisan(ExportLangKeysCommand::class)

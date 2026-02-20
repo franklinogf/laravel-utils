@@ -14,8 +14,8 @@ beforeEach(function (): void {
 
 afterEach(function (): void {
     // Clean up
-    File::deleteDirectory(app_path());
-    File::deleteDirectory(resource_path());
+    File::deleteDirectory(app_path('Enums'));
+    File::deleteDirectory(resource_path('js/enums'));
 });
 
 it('generates TypeScript enums from PHP BackedEnums', function (): void {

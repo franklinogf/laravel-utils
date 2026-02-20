@@ -35,7 +35,7 @@ final class ExportLangKeysCommand extends Command
      */
     public function handle(): void
     {
-        $outputPath = resource_path(config()->string('utils.lang_keys.output_path', 'js/types/lang-keys.d.ts'));
+        $outputPath = config()->string('utils.lang_keys.output_path', resource_path('js/types/lang-keys.d.ts'));
 
         $this->info('Generating TypeScript translation keys...');
         $this->newLine(2);
@@ -47,11 +47,11 @@ final class ExportLangKeysCommand extends Command
         $output = $this->generateTypeScriptDefinitions($translations);
 
         $outputDir = dirname($outputPath);
-        if (! is_dir($outputDir)) {
-            mkdir($outputDir, 0755, true);
+        if (! File::isDirectory($outputDir)) {
+            File::makeDirectory($outputDir, 0755, true);
         }
 
-        file_put_contents($outputPath, $output);
+        File::put($outputPath, $output);
 
         $this->info("TypeScript definition written to: $outputPath");
         $this->info('Done! Found '.count($translations).' unique translation keys.');
