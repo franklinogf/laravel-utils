@@ -75,7 +75,7 @@ final class SyncEnumsCommand extends Command
                 return $reflection->isEnum() && $reflection->implementsInterface(BackedEnum::class);
             })
             ->toArray();
-        // dd($enums);
+
         $this->info('Found '.count($enums).' enum(s) to sync.');
 
         if (! File::isDirectory($outputPath)) {
@@ -93,10 +93,10 @@ final class SyncEnumsCommand extends Command
                     $caseValue = $case->value;
 
                     if (is_string($caseValue)) {
-                        return "    {$caseName} = '{$caseValue}',";
+                        return "  {$caseName} = '{$caseValue}',";
                     }
 
-                    return "    {$caseName} = {$caseValue},";
+                    return "  {$caseName} = {$caseValue},";
                 })
                 ->implode("\n");
 
