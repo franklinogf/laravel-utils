@@ -88,7 +88,16 @@ final class SyncEnumsCommand extends Command
             $relativePathForFile = $enumData['relativePathForFile'];
 
             $cases = collect($namespace::cases())
-                ->map(fn (BackedEnum $case): string => "  {$case->name} = '{$case->value}',")
+                ->map(function (BackedEnum $case): string {
+                    $caseName = $case->name;
+                    $caseValue = $case->value;
+
+                    if (is_string($caseValue)) {
+                        return "    {$caseName} = '{$caseValue}',";
+                    }
+
+                    return "    {$caseName} = {$caseValue},";
+                })
                 ->implode("\n");
 
             $ts = <<<TS

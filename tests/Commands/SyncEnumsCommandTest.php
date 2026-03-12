@@ -211,9 +211,9 @@ PHP);
 
     // Assert
     $content = File::get(resource_path('js/enums/Priority.ts'));
-    expect($content)->toContain("Low = '1',")
-        ->toContain("Medium = '2',")
-        ->toContain("High = '3',");
+    expect($content)->toContain('Low = 1,')
+        ->toContain('Medium = 2,')
+        ->toContain('High = 3,');
 });
 
 it('handles empty enums directory gracefully', function (): void {
