@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/franklinogf/laravel-utils/compare/v0.2.1...v0.2.2) (2026-03-12)
+
+
+### Bug Fixes
+
+* adjust indentation for enum case values and remove debug statement ([e20b95c](https://github.com/franklinogf/laravel-utils/commit/e20b95cf3774c826089240d0294852c636cb9244))
+
 ## [0.2.1](https://github.com/franklinogf/laravel-utils/compare/v0.2.0...v0.2.1) (2026-03-12)
 
 
