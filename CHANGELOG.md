@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1](https://github.com/franklinogf/laravel-utils/compare/v0.2.0...v0.2.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* update SyncEnumsCommand to handle string and integer enum values correctly ([86bb2a1](https://github.com/franklinogf/laravel-utils/commit/86bb2a1adbc1ad6c84bf0b411fa4176273594362))
+
+
+### Miscellaneous Chores
+
+* remove skipped rector rule for overridden methods ([35072d3](https://github.com/franklinogf/laravel-utils/commit/35072d36011461a6b98cfad7111e47fd1912bdb2))
+
 ## [0.2.0](https://github.com/franklinogf/laravel-utils/compare/v0.1.2...v0.2.0) (2026-02-20)
 
 
