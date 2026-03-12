@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use ReflectionClass;
-use SplFileInfo;
+use Symfony\Component\Finder\SplFileInfo;
 
 final class SyncEnumsCommand extends Command
 {
