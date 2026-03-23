@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/franklinogf/laravel-utils/compare/v0.2.2...v0.2.3) (2026-03-23)
+
+
+### Bug Fixes
+
+* update PHP and Laravel framework to support version 13 ([28c5bb3](https://github.com/franklinogf/laravel-utils/commit/28c5bb39f07afab7b3ee392ac5a226f3c714660a))
+
 ## [0.2.2](https://github.com/franklinogf/laravel-utils/compare/v0.2.1...v0.2.2) (2026-03-12)
 
 
